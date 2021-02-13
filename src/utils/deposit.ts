@@ -1,9 +1,9 @@
+import signale from 'signale';
 import { sum, take, times } from 'lodash';
 import { goals } from 'mineflayer-pathfinder';
-import { BotMachineContext, Stack } from '../types';
-import { moveTo } from './move-to';
 
-const signale = require('signale').scope('deposit');
+import { moveTo } from './move-to';
+import { BotMachineContext, Stack } from '../types';
 
 // TODO: loop through near chests to find place
 // TODO: chest keep inventory sorted

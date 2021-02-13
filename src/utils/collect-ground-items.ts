@@ -1,9 +1,8 @@
+import signale from 'signale';
 import { goals } from 'mineflayer-pathfinder';
 
 import { moveTo } from './move-to';
 import { BotMachineContext } from '../types';
-
-const signale = require('signale').scope('collect');
 
 export async function collectGroundItems({
   bot,
@@ -23,10 +22,20 @@ export async function collectGroundItems({
   signale.info(`found ${droppedItems.length} items to collect`);
 
   for (const item of droppedItems) {
-    await moveTo(
-      bot!,
-      new goals.GoalNear(item.position.x, item.position.y, item.position.z, 1),
-      { tries: 3, timeout: 5000 }
-    );
+    if (item.position.distanceTo(bot!.entity.position) > 1) {
+      await moveTo(
+        bot!,
+        new goals.GoalNear(
+          item.position.x,
+          item.position.y,
+          item.position.z,
+          1
+        ),
+        {
+          tries: 3,
+          timeout: 3000,
+        }
+      );
+    }
   }
 }

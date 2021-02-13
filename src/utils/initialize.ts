@@ -1,3 +1,4 @@
+import signale from 'signale';
 import mineflayer from 'mineflayer';
 import inventoryViewer from 'mineflayer-web-inventory';
 import armorManager from 'mineflayer-armor-manager';
@@ -5,8 +6,6 @@ import { IndexedData } from 'minecraft-data';
 import { Movements, pathfinder } from 'mineflayer-pathfinder';
 
 import { Bot } from '../types';
-
-const signale = require('signale').scope('initialize');
 
 const options = {
   host: process.env.SERVER_HOST as string,

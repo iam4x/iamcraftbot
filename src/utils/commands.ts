@@ -1,7 +1,7 @@
+import signale from 'signale';
 import { Sender } from 'xstate';
-import { BotMachineContext, BotMachineEvent } from '../types';
 
-const signale = require('signale').scope('commands');
+import { BotMachineContext, BotMachineEvent } from '../types';
 
 export function listenChatCommands(context: BotMachineContext) {
   return (callback: Sender<BotMachineEvent>) => {

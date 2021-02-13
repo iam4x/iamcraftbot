@@ -1,9 +1,9 @@
 /* eslint @typescript-eslint/no-use-before-define: off */
+import signale from 'signale';
 import { goals } from 'mineflayer-pathfinder';
 import { Vec3 } from 'vec3';
-import { Bot } from '../types';
 
-const signale = require('signale').scope('moveTo');
+import { Bot } from '../types';
 
 const positionToString = (pos: Vec3) =>
   `{ x: ${Math.round(pos.x)} y: ${Math.round(pos.y)} z: ${Math.round(pos.z)} }`;

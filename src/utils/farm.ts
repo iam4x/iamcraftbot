@@ -1,11 +1,10 @@
+import signale from 'signale';
 import { goals } from 'mineflayer-pathfinder';
 import { IndexedData } from 'minecraft-data';
 import { Vec3 } from 'vec3';
 
 import { moveTo } from './move-to';
 import { Bot, BotMachineContext } from '../types';
-
-const signale = require('signale').scope('farm');
 
 // TODO: Sleep at night
 // TODO: Check to eat as well

@@ -1,9 +1,8 @@
+import signale from 'signale';
 import { goals } from 'mineflayer-pathfinder';
 
-import { BotMachineContext } from '../types';
 import { moveTo } from './move-to';
-
-const signale = require('signale').scope('moveToPlayer');
+import { BotMachineContext } from '../types';
 
 export function moveToPlayer({ bot, move_to_username }: BotMachineContext) {
   return new Promise((resolve) => {
