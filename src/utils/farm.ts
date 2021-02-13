@@ -1,4 +1,5 @@
 import signale from 'signale';
+import { shuffle } from 'lodash';
 import { goals } from 'mineflayer-pathfinder';
 import { IndexedData } from 'minecraft-data';
 import { Vec3 } from 'vec3';
@@ -17,7 +18,7 @@ export const TO_HARVEST = [
 ];
 
 function getSeedsIds(data: IndexedData) {
-  return data.itemsArray
+  return shuffle(data.itemsArray)
     .filter((item) => TO_HARVEST.some(({ seed }) => item.name === seed))
     .map((item) => item.id);
 }
@@ -111,14 +112,24 @@ export async function plant({ bot, mcData }: BotMachineContext): Promise<void> {
 
   // signale.info('found block to plant');
 
-  await moveTo(
-    bot!,
-    new goals.GoalGetToBlock(
-      blockToPlant.position.x,
-      blockToPlant.position.y,
-      blockToPlant.position.z
-    )
-  );
+  if (blockToPlant.position.distanceTo(bot!.entity.position) > 2) {
+    const { success } = await moveTo(
+      bot!,
+      new goals.GoalGetToBlock(
+        blockToPlant.position.x,
+        blockToPlant.position.y,
+        blockToPlant.position.z
+      )
+    );
+
+    if (
+      !success &&
+      blockToPlant.position.distanceTo(bot!.entity.position) > 2
+    ) {
+      signale.warn('could not move to farmland');
+      throw new Error('could not move to farmland');
+    }
+  }
 
   const hasSeeds = await trySelectAnyItem(bot!, getSeedsIds(mcData!));
 
