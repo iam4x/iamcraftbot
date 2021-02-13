@@ -9,6 +9,13 @@ import { BotMachineContext, Stack } from '../types';
 // TODO: chest keep inventory sorted
 
 export async function deposit({ bot, mcData, to_deposit }: BotMachineContext) {
+  const totalCount = sum(to_deposit?.map(({ count }) => count));
+
+  if (!totalCount) {
+    signale.warn('no items to deposit');
+    return undefined;
+  }
+
   const nearestChest = bot?.findBlock({
     useExtraInfo: true,
     matching: mcData!.blocksByName.chest!.id,
@@ -23,7 +30,10 @@ export async function deposit({ bot, mcData, to_deposit }: BotMachineContext) {
     const { x, y, z } = nearestChest.position;
     const { success } = await moveTo(bot!, new goals.GoalGetToBlock(x, y, z));
 
-    if (!success) {
+    if (
+      !success &&
+      nearestChest.position.distanceTo(bot!.entity.position) > 3
+    ) {
       signale.warn('cant reach nearest chest');
       return undefined;
     }
@@ -69,7 +79,7 @@ export async function deposit({ bot, mcData, to_deposit }: BotMachineContext) {
   }, [] as Stack[]);
 
   if (!stacks?.length) {
-    signale.warn('no items found to deposit');
+    signale.warn('no items to deposit');
     return undefined;
   }
 
