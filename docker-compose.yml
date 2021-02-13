@@ -1,0 +1,28 @@
+version: "3"
+
+volumes:
+  node_modules:
+
+services:
+  bot:
+    build: .
+    env_file: .env
+    command: yarn dev
+    volumes:
+      - .:/app
+      - node_modules:/data/node_modules
+
+  mc:
+    image: itzg/minecraft-server:adopt11
+    ports:
+      - 25565:25565
+    volumes:
+      - ./.dev-server:/data
+    environment:
+      EULA: "TRUE"
+      TYPE: "TUINITY"
+      LEVEL_TYPE: "flat"
+      DIFFICULTY: "peaceful"
+      # OPS: "iam4x"
+      # UID: 501
+      # GID: 20

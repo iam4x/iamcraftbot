@@ -1,2 +1,10 @@
+# bot
 .env
 node_modules
+
+# dev minecraft server
+.dev-server/*
+!.dev-server/.gitkeep
+
+# minecraft session
+launcher_profiles.json
