@@ -67,12 +67,16 @@ export async function deposit({ bot, mcData, to_deposit }: BotMachineContext) {
   }
 
   for (const stack of take(stacks, remainingSlots)) {
-    signale.info(`deposit [${stack.name} x ${stack.count}]`);
-    await chest?.deposit(
-      mcData?.itemsByName[stack.name].id!,
-      null,
-      stack.count
-    );
+    try {
+      signale.info(`deposit [${stack.name} x ${stack.count}]`);
+      await chest?.deposit(
+        mcData?.itemsByName[stack.name].id!,
+        null,
+        stack.count
+      );
+    } catch (err) {
+      signale.warn(`could not deposit [${stack.name} x ${stack.count}]`);
+    }
   }
 
   await chest?.close();

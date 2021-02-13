@@ -153,11 +153,13 @@ export function setDepositFarmItems(context: BotMachineContext) {
     {} as Record<string, number>
   );
 
-  const toDeposit = Object.entries(inventoryStacks).map(([item, count]) =>
-    toKeep.includes(item)
-      ? { name: item, count: count - 64 }
-      : { name: item, count }
-  );
+  const toDeposit = Object.entries(inventoryStacks)
+    .filter(([, count]) => count > 0)
+    .map(([item, count]) =>
+      toKeep.includes(item)
+        ? { name: item, count: count - 64 }
+        : { name: item, count }
+    );
 
   context.to_deposit = toDeposit;
 }
