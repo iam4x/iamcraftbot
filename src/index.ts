@@ -103,7 +103,17 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
               id: 'harvest',
               src: 'harvest',
               onDone: { target: 'harvesting' },
-              onError: { target: 'planting' },
+              onError: { target: 'collecting' },
+            },
+          },
+          collecting: {
+            invoke: {
+              id: 'collect',
+              src: 'collectGroundItems',
+              onDone: {
+                target: 'planting',
+                actions: ['disposeContextVariables', 'setDepositFarmItems'],
+              },
             },
           },
           planting: {
@@ -112,18 +122,8 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
               src: 'plant',
               onDone: { target: 'planting' },
               onError: {
-                target: 'collecting',
-                actions: 'setCollectFarmItems',
-              },
-            },
-          },
-          collecting: {
-            invoke: {
-              id: 'collect',
-              src: 'collectGroundItems',
-              onDone: {
                 target: 'emptying_inventory',
-                actions: ['disposeContextVariables', 'setDepositFarmItems'],
+                actions: 'setCollectFarmItems',
               },
             },
           },
