@@ -19,8 +19,15 @@ export async function deposit({ bot, mcData, to_deposit }: BotMachineContext) {
     return undefined;
   }
 
-  const { x, y, z } = nearestChest.position;
-  await moveTo(bot!, new goals.GoalNear(x, y, z, 3));
+  if (nearestChest.position.distanceTo(bot!.entity.position) > 3) {
+    const { x, y, z } = nearestChest.position;
+    const { success } = await moveTo(bot!, new goals.GoalGetToBlock(x, y, z));
+
+    if (!success) {
+      signale.warn('cant reach nearest chest');
+      return undefined;
+    }
+  }
 
   const chest = await bot?.openChest(nearestChest);
   const chestSize = (chest as any).type === 'minecraft:generic_9x6' ? 54 : 27;
@@ -79,7 +86,6 @@ export async function deposit({ bot, mcData, to_deposit }: BotMachineContext) {
     }
   }
 
-  await chest?.close();
-
+  chest?.close();
   return undefined;
 }

@@ -139,6 +139,7 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
           },
           waiting: {
             entry: () => signale.scope('farm').info('waiting 10 seconds...'),
+            activities: ['lookAround'],
             after: { [10 * 1000]: 'harvesting' },
           },
         },

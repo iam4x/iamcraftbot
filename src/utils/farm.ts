@@ -82,7 +82,12 @@ export async function harvest({
     });
 
   if (hasSeeds) {
-    await bot?.placeBlock(blockToHarvest, new Vec3(0, 1, 0)).catch(() => {});
+    try {
+      await bot?.placeBlock(blockToHarvest, new Vec3(0, 1, 0));
+    } catch {
+      // it throws error but
+      // the operation has been done, idk why "block still air?"
+    }
   }
 
   return undefined;
@@ -109,19 +114,19 @@ export async function plant({ bot, mcData }: BotMachineContext): Promise<void> {
 
   await moveTo(
     bot!,
-    new goals.GoalNear(
+    new goals.GoalGetToBlock(
       blockToPlant.position.x,
       blockToPlant.position.y,
-      blockToPlant.position.z,
-      1
+      blockToPlant.position.z
     )
   );
 
   const hasSeeds = await trySelectAnyItem(bot!, getSeedsIds(mcData!));
 
   if (hasSeeds) {
-    await bot?.placeBlock(blockToPlant, new Vec3(0, 1, 0)).catch(() => {});
-    return undefined;
+    await bot
+      ?.placeBlock(blockToPlant, new Vec3(0, 1, 0))
+      .catch(() => signale.warn('could not plant farmland'));
   }
 
   return undefined;
