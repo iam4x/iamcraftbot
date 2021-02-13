@@ -10,7 +10,8 @@ import { initialize } from './utils/initialize';
 import { listenChatCommands } from './utils/commands';
 import { waitForStop } from './utils/wait-for-stop';
 import { collectGroundItems } from './utils/collect-ground-items';
-import { harvest, plant } from './utils/farm';
+import { deposit } from './utils/deposit';
+import * as farm from './utils/farm';
 
 import { BotMachineContext, BotMachineEvent } from './types';
 
@@ -73,7 +74,7 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
           src: 'moveToPlayer',
           onDone: {
             target: 'listening_chat_commands',
-            actions: (context) => (context.move_to_username = undefined),
+            actions: 'disposeContextVariables',
           },
         },
       },
@@ -84,7 +85,7 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
           src: 'followPlayer',
           onDone: {
             target: 'listening_chat_commands',
-            actions: (context) => (context.follow_username = undefined),
+            actions: 'disposeContextVariables',
           },
         },
       },
@@ -112,7 +113,7 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
               onDone: { target: 'planting' },
               onError: {
                 target: 'collecting',
-                actions: 'collectFarmItems',
+                actions: 'setCollectFarmItems',
               },
             },
           },
@@ -121,12 +122,18 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
               id: 'collect',
               src: 'collectGroundItems',
               onDone: {
-                target: 'waiting',
-                actions: 'disposeItemsToCollect',
+                target: 'emptying_inventory',
+                actions: ['disposeContextVariables', 'setDepositFarmItems'],
               },
-              onError: {
+            },
+          },
+          emptying_inventory: {
+            invoke: {
+              id: 'deposit',
+              src: deposit,
+              onDone: {
                 target: 'waiting',
-                actions: 'disposeItemsToCollect',
+                actions: 'disposeContextVariables',
               },
             },
           },
@@ -145,27 +152,22 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
       initialize,
       listenChatCommands,
       waitForStop,
-      plant,
-      harvest,
       collectGroundItems,
+      plant: farm.plant,
+      harvest: farm.harvest,
     },
     activities: {
       lookAround,
     },
     actions: {
-      collectFarmItems: (context) => {
-        context.items_to_collect = [
-          'wheat',
-          'wheat_seeds',
-          'carrot',
-          'potato',
-          'beetroot',
-          'beetroot_seeds',
-        ];
-      },
-      disposeItemsToCollect: (context) => {
+      disposeContextVariables: (context) => {
         context.items_to_collect = [];
+        context.to_deposit = [];
+        context.follow_username = undefined;
+        context.move_to_username = undefined;
       },
+      setDepositFarmItems: farm.setDepositFarmItems,
+      setCollectFarmItems: farm.setCollectFarmItems,
     },
   }
 );

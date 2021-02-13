@@ -7,6 +7,7 @@
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts"
   },
   "devDependencies": {
+    "@types/lodash": "^4.14.168",
     "@types/node": "^14.14.27",
     "@types/signale": "^1.4.1",
     "@typescript-eslint/eslint-plugin": "^4.15.0",
@@ -27,6 +28,7 @@
   "dependencies": {
     "@xstate/fsm": "^1.6.0",
     "dotenv": "^8.2.0",
+    "lodash": "^4.17.20",
     "minecraft-data": "^2.74.0",
     "mineflayer": "^3.0.0",
     "mineflayer-armor-manager": "^1.4.0",

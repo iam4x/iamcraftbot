@@ -7,7 +7,10 @@ import { Bot, BotMachineContext } from '../types';
 
 const signale = require('signale').scope('farm');
 
-const TO_HARVEST = [
+// TODO: Sleep at night
+// TODO: Check to eat as well
+
+export const TO_HARVEST = [
   { name: 'wheat', metadata: 7, seed: 'wheat_seeds' },
   { name: 'carrots', metadata: 7, seed: 'carrot' },
   { name: 'beetroots', metadata: 3, seed: 'beetroot_seeds' },
@@ -122,4 +125,39 @@ export async function plant({ bot, mcData }: BotMachineContext): Promise<void> {
   }
 
   return undefined;
+}
+
+export function setCollectFarmItems(context: BotMachineContext) {
+  context.items_to_collect = [
+    'wheat',
+    'wheat_seeds',
+    'carrot',
+    'potato',
+    'beetroot',
+    'beetroot_seeds',
+  ];
+}
+
+export function setDepositFarmItems(context: BotMachineContext) {
+  const toKeep = TO_HARVEST.map(({ seed }) => seed);
+  const inventoryStacks = context.bot!.inventory.slots.reduce(
+    (result, item) => {
+      if (item) {
+        return {
+          ...result,
+          [item.name]: (result[item.name] || 0) + item.count,
+        };
+      }
+      return result;
+    },
+    {} as Record<string, number>
+  );
+
+  const toDeposit = Object.entries(inventoryStacks).map(([item, count]) =>
+    toKeep.includes(item)
+      ? { name: item, count: count - 64 }
+      : { name: item, count }
+  );
+
+  context.to_deposit = toDeposit;
 }
