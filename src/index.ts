@@ -13,6 +13,7 @@ import { collectGroundItems } from './utils/collect-ground-items';
 import { deposit } from './utils/deposit';
 import { sleep } from './utils/sleep';
 import { eat } from './utils/eat';
+import { listenDisconnect } from './utils/listen-disconnect';
 import * as farm from './utils/farm';
 import * as fish from './utils/fish';
 
@@ -22,7 +23,7 @@ import { BotMachineContext, BotMachineEvent } from './types';
 const botMachine = Machine<BotMachineContext, BotMachineEvent>(
   {
     id: 'bot',
-    initial: 'initializing',
+    initial: 'logged_out',
     context: {
       options: {
         eat: true,
@@ -31,172 +32,193 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
     },
 
     states: {
-      initializing: {
-        invoke: {
-          id: 'login',
-          src: 'initialize',
-          onDone: 'listening_chat_commands',
-        },
-      },
-
-      listening_chat_commands: {
-        id: 'listening_chat_commands',
-        activities: ['lookAround'],
-        invoke: {
-          id: 'listen_chat_commands',
-          src: 'listenChatCommands',
-        },
-        on: {
-          FARM: 'farming',
-          FISH: 'fishing',
-          MOVE_TO_PLAYER: 'moving_to_player',
-          FOLLOW_PLAYER: 'following_player',
-        },
-      },
-
-      moving_to_player: {
-        invoke: {
-          id: 'move_to_player',
-          src: 'moveToPlayer',
-          onDone: {
-            target: 'listening_chat_commands',
-            actions: 'disposeContextVariables',
+      logged_out: {
+        id: 'logged_out',
+        initial: 'initializing',
+        states: {
+          initializing: {
+            invoke: {
+              id: 'login',
+              src: 'initialize',
+              onDone: '#in_game',
+            },
           },
         },
       },
 
-      following_player: {
+      in_game: {
+        id: 'in_game',
+        initial: 'listening_chat_commands',
         invoke: {
-          id: 'follow_player',
-          src: 'followPlayer',
-          onDone: {
-            target: 'listening_chat_commands',
-            actions: 'disposeContextVariables',
-          },
-        },
-      },
-
-      farming: {
-        initial: 'harvesting',
-        invoke: {
-          id: 'wait_for_stop',
-          src: 'waitForStop',
-          onDone: 'listening_chat_commands',
+          id: 'listen_disconnect',
+          src: 'listenDisconnect',
+          onDone: { target: '.disconnected' },
         },
         states: {
-          harvesting: {
-            invoke: {
-              id: 'harvest',
-              src: 'harvest',
-              onDone: 'harvesting',
-              onError: {
-                target: 'collecting',
-                actions: 'setCollectFarmItems',
-              },
-            },
+          disconnected: {
+            after: { [10 * 1000]: '#logged_out' },
           },
-          collecting: {
-            invoke: {
-              id: 'collect',
-              src: 'collectGroundItems',
-              onDone: {
-                target: 'planting',
-                actions: 'disposeContextVariables',
-              },
-            },
-          },
-          planting: {
-            invoke: {
-              id: 'plant',
-              src: 'plant',
-              onDone: 'planting',
-              onError: 'eating',
-            },
-          },
-          eating: {
-            invoke: {
-              id: 'eat',
-              src: 'eat',
-              onDone: {
-                target: 'emptying_inventory',
-                actions: 'setDepositFarmItems',
-              },
-            },
-          },
-          emptying_inventory: {
-            invoke: {
-              id: 'deposit',
-              src: 'deposit',
-              onDone: {
-                target: 'sleeping',
-                actions: 'disposeContextVariables',
-              },
-            },
-          },
-          sleeping: {
-            invoke: {
-              id: 'sleep',
-              src: 'sleep',
-              onDone: 'waiting',
-            },
-          },
-          waiting: {
-            entry: 'logWaiting',
+
+          listening_chat_commands: {
+            id: 'listening_chat_commands',
             activities: ['lookAround'],
-            after: { 2000: 'harvesting' },
+            invoke: {
+              id: 'listen_chat_commands',
+              src: 'listenChatCommands',
+            },
+            on: {
+              FARM: 'farming',
+              FISH: 'fishing',
+              MOVE_TO_PLAYER: 'moving_to_player',
+              FOLLOW_PLAYER: 'following_player',
+            },
           },
-        },
-      },
 
-      fishing: {
-        initial: 'moving_to_water',
-        invoke: {
-          id: 'wait_for_stop',
-          src: 'waitForStop',
-          onDone: 'listening_chat_commands',
-        },
-        states: {
-          moving_to_water: {
+          moving_to_player: {
             invoke: {
-              id: 'move_to_water',
-              src: 'moveNearWater',
-              onDone: 'waiting_for_fish',
-              onError: '#listening_chat_commands',
-            },
-          },
-          waiting_for_fish: {
-            invoke: {
-              id: 'wait_for_fish',
-              src: 'waitForFish',
+              id: 'move_to_player',
+              src: 'moveToPlayer',
               onDone: {
-                target: 'emptying_inventory',
-                actions: 'setDepositFishingItems',
-              },
-              onError: '#listening_chat_commands',
-            },
-          },
-          emptying_inventory: {
-            invoke: {
-              id: 'deposit',
-              src: 'deposit',
-              onDone: {
-                target: 'eating',
+                target: 'listening_chat_commands',
                 actions: 'disposeContextVariables',
               },
             },
           },
-          eating: {
+
+          following_player: {
             invoke: {
-              id: 'eat',
-              src: 'eat',
-              onDone: 'sleeping',
+              id: 'follow_player',
+              src: 'followPlayer',
+              onDone: {
+                target: 'listening_chat_commands',
+                actions: 'disposeContextVariables',
+              },
             },
           },
-          sleeping: {
+
+          farming: {
+            initial: 'harvesting',
             invoke: {
-              id: 'sleep',
-              src: 'sleep',
-              onDone: 'moving_to_water',
+              id: 'wait_for_stop',
+              src: 'waitForStop',
+              onDone: 'listening_chat_commands',
+            },
+            states: {
+              harvesting: {
+                invoke: {
+                  id: 'harvest',
+                  src: 'harvest',
+                  onDone: 'harvesting',
+                  onError: {
+                    target: 'collecting',
+                    actions: 'setCollectFarmItems',
+                  },
+                },
+              },
+              collecting: {
+                invoke: {
+                  id: 'collect',
+                  src: 'collectGroundItems',
+                  onDone: {
+                    target: 'planting',
+                    actions: 'disposeContextVariables',
+                  },
+                },
+              },
+              planting: {
+                invoke: {
+                  id: 'plant',
+                  src: 'plant',
+                  onDone: 'planting',
+                  onError: 'eating',
+                },
+              },
+              eating: {
+                invoke: {
+                  id: 'eat',
+                  src: 'eat',
+                  onDone: {
+                    target: 'emptying_inventory',
+                    actions: 'setDepositFarmItems',
+                  },
+                },
+              },
+              emptying_inventory: {
+                invoke: {
+                  id: 'deposit',
+                  src: 'deposit',
+                  onDone: {
+                    target: 'sleeping',
+                    actions: 'disposeContextVariables',
+                  },
+                },
+              },
+              sleeping: {
+                invoke: {
+                  id: 'sleep',
+                  src: 'sleep',
+                  onDone: 'waiting',
+                },
+              },
+              waiting: {
+                entry: 'logWaiting',
+                activities: ['lookAround'],
+                after: { 2000: 'harvesting' },
+              },
+            },
+          },
+
+          fishing: {
+            initial: 'moving_to_water',
+            invoke: {
+              id: 'wait_for_stop',
+              src: 'waitForStop',
+              onDone: 'listening_chat_commands',
+            },
+            states: {
+              moving_to_water: {
+                invoke: {
+                  id: 'move_to_water',
+                  src: 'moveNearWater',
+                  onDone: 'waiting_for_fish',
+                  onError: '..listening_chat_commands',
+                },
+              },
+              waiting_for_fish: {
+                invoke: {
+                  id: 'wait_for_fish',
+                  src: 'waitForFish',
+                  onDone: {
+                    target: 'emptying_inventory',
+                    actions: 'setDepositFishingItems',
+                  },
+                  onError: '..listening_chat_commands',
+                },
+              },
+              emptying_inventory: {
+                invoke: {
+                  id: 'deposit',
+                  src: 'deposit',
+                  onDone: {
+                    target: 'eating',
+                    actions: 'disposeContextVariables',
+                  },
+                },
+              },
+              eating: {
+                invoke: {
+                  id: 'eat',
+                  src: 'eat',
+                  onDone: 'sleeping',
+                },
+              },
+              sleeping: {
+                invoke: {
+                  id: 'sleep',
+                  src: 'sleep',
+                  onDone: 'moving_to_water',
+                },
+              },
             },
           },
         },
@@ -213,6 +235,7 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
       listenChatCommands,
       waitForStop,
       deposit,
+      listenDisconnect,
       collectGroundItems,
       plant: farm.plant,
       harvest: farm.harvest,
