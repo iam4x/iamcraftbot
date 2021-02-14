@@ -113,7 +113,10 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
               src: 'waitForStop',
               onDone: {
                 target: 'listening_chat_commands',
-                actions: (context) => (context.farming = false),
+                actions: (context) => {
+                  context.bot!.unequip('hand');
+                  context.farming = false;
+                },
               },
             },
             states: {
@@ -189,7 +192,10 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
               src: 'waitForStop',
               onDone: {
                 target: 'listening_chat_commands',
-                actions: (context) => (context.fishing = false),
+                actions: (context) => {
+                  context.bot!.unequip('hand');
+                  context.fishing = false;
+                },
               },
             },
             states: {
