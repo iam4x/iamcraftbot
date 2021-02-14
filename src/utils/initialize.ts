@@ -1,6 +1,5 @@
 import signale from 'signale';
 import mineflayer from 'mineflayer';
-import armorManager from 'mineflayer-armor-manager';
 import { IndexedData } from 'minecraft-data';
 import { Movements, pathfinder } from 'mineflayer-pathfinder';
 
@@ -19,7 +18,6 @@ export function initialize() {
     // initialize bot
     const bot = mineflayer.createBot(options) as Bot;
     bot.loadPlugin(pathfinder);
-    bot.loadPlugin(armorManager);
 
     signale.info('bot created');
 

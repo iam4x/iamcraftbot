@@ -33,7 +33,6 @@
     "lodash": "^4.17.20",
     "minecraft-data": "^2.74.0",
     "mineflayer": "^3.0.0",
-    "mineflayer-armor-manager": "^1.4.0",
     "mineflayer-pathfinder": "^1.4.0",
     "signale": "^1.4.0",
     "vec3": "^0.1.7",

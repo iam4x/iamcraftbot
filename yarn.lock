@@ -1484,7 +1484,7 @@ micromatch@^4.0.2:
     braces "^3.0.1"
     picomatch "^2.0.5"
 
-minecraft-data@^2.61.0, minecraft-data@^2.62.1, minecraft-data@^2.65.0, minecraft-data@^2.70.0, minecraft-data@^2.71.0, minecraft-data@^2.73.1, minecraft-data@^2.74.0:
+minecraft-data@^2.61.0, minecraft-data@^2.62.1, minecraft-data@^2.70.0, minecraft-data@^2.71.0, minecraft-data@^2.73.1, minecraft-data@^2.74.0:
   version "2.74.0"
   resolved "https://registry.yarnpkg.com/minecraft-data/-/minecraft-data-2.74.0.tgz#5f75ff03ecce020935dcec05bf0ef262be46a7f2"
   integrity sha512-YOi8L6Gq2cxkBktU7jVTEpS9YEJeYki9PZQRMS1I7xlc/xy3gdQhsZ5W/cDop4xP3gdxkq+bEww74r+jb8AU9g==
@@ -1518,14 +1518,6 @@ minecraft-protocol@^1.17.0:
     readable-stream "^3.0.6"
     uuid-1345 "^1.0.1"
     yggdrasil "^1.4.0"
-
-mineflayer-armor-manager@^1.4.0:
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/mineflayer-armor-manager/-/mineflayer-armor-manager-1.4.0.tgz#3d6fb2e7be45725d8ad163c63a5e62c7ebbbcd05"
-  integrity sha512-YQV16IUG5dgcHq+om2cl3Ay5rOxBD4zcpq5uANTNhRMt4h1ywUWIbEJi894nx3IM9eU/pNrxQlq6FvIEAny7tA==
-  dependencies:
-    minecraft-data "^2.65.0"
-    rambda "^5.13.1"
 
 mineflayer-pathfinder@^1.4.0:
   version "1.4.0"
@@ -2002,11 +1994,6 @@ railroad-diagrams@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/railroad-diagrams/-/railroad-diagrams-1.0.0.tgz#eb7e6267548ddedfb899c1b90e57374559cddb7e"
   integrity sha1-635iZ1SN3t+4mcG5Dlc3RVnN234=
-
-rambda@^5.13.1:
-  version "5.13.1"
-  resolved "https://registry.yarnpkg.com/rambda/-/rambda-5.13.1.tgz#878de64abba268a515f5cd5327448da4344e9b3b"
-  integrity sha512-ygj/oPmskiJXcTMWPo1RkKnqI2EjwvO/0KV/F+oJ5njhj4vDENLPqBV3CjDMiJ8yZTZvQbPOciUnsmXZkAF3Vw==
 
 randexp@0.4.6:
   version "0.4.6"
