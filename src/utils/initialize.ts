@@ -3,7 +3,7 @@ import mineflayer from 'mineflayer';
 import { IndexedData } from 'minecraft-data';
 import { Movements, pathfinder } from 'mineflayer-pathfinder';
 
-import { Bot } from '../types';
+import { Bot, BotMachineContext } from '../types';
 
 const options = {
   host: process.env.SERVER_HOST as string,
@@ -13,7 +13,7 @@ const options = {
   auth: process.env.ACCOUNT_TYPE as 'mojang' | 'microsoft',
 };
 
-export function initialize() {
+export function initialize(context: BotMachineContext) {
   return new Promise((resolve) => {
     // initialize bot
     const bot = mineflayer.createBot(options) as Bot;
@@ -43,7 +43,10 @@ export function initialize() {
 
       // save bot instance
       // save mcData for version
-      return resolve({ bot, mcData });
+      context.bot = bot;
+      context.mcData = mcData;
+
+      return resolve(undefined);
     });
 
     bot.on('error', (err: Error) => {

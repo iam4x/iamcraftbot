@@ -1,7 +1,7 @@
 require('dotenv').config();
 
 import signale from 'signale';
-import { assign, interpret, Machine } from 'xstate';
+import { interpret, Machine } from 'xstate';
 
 import { lookAround } from './utils/look-around';
 import { followPlayer } from './utils/follow-player';
@@ -35,13 +35,7 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
         invoke: {
           id: 'login',
           src: 'initialize',
-          onDone: {
-            target: 'listening_chat_commands',
-            actions: assign({
-              bot: (_context, event) => event.data.bot,
-              mcData: (_context, event) => event.data.mcData,
-            }),
-          },
+          onDone: 'listening_chat_commands',
         },
       },
 
@@ -87,14 +81,14 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
         invoke: {
           id: 'wait_for_stop',
           src: 'waitForStop',
-          onDone: { target: 'listening_chat_commands' },
+          onDone: 'listening_chat_commands',
         },
         states: {
           harvesting: {
             invoke: {
               id: 'harvest',
               src: 'harvest',
-              onDone: { target: 'harvesting' },
+              onDone: 'harvesting',
               onError: {
                 target: 'collecting',
                 actions: 'setCollectFarmItems',
@@ -115,8 +109,8 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
             invoke: {
               id: 'plant',
               src: 'plant',
-              onDone: { target: 'planting' },
-              onError: { target: 'eating' },
+              onDone: 'planting',
+              onError: 'eating',
             },
           },
           eating: {
@@ -143,11 +137,11 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
             invoke: {
               id: 'sleep',
               src: 'sleep',
-              onDone: { target: 'waiting' },
+              onDone: 'waiting',
             },
           },
           waiting: {
-            entry: () => signale.info('waiting...'),
+            entry: 'logWaiting',
             activities: ['lookAround'],
             after: { 2000: 'harvesting' },
           },
@@ -159,15 +153,15 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
         invoke: {
           id: 'wait_for_stop',
           src: 'waitForStop',
-          onDone: { target: 'listening_chat_commands' },
+          onDone: 'listening_chat_commands',
         },
         states: {
           moving_to_water: {
             invoke: {
               id: 'move_to_water',
               src: 'moveNearWater',
-              onDone: { target: 'waiting_for_fish' },
-              onError: { target: '#listening_chat_commands' },
+              onDone: 'waiting_for_fish',
+              onError: '#listening_chat_commands',
             },
           },
           waiting_for_fish: {
@@ -178,7 +172,7 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
                 target: 'emptying_inventory',
                 actions: 'setDepositFishingItems',
               },
-              onError: { target: '#listening_chat_commands' },
+              onError: '#listening_chat_commands',
             },
           },
           emptying_inventory: {
@@ -189,24 +183,20 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
                 target: 'eating',
                 actions: 'disposeContextVariables',
               },
-              onError: {
-                target: 'eating',
-                actions: 'disposeContextVariables',
-              },
             },
           },
           eating: {
             invoke: {
               id: 'eat',
               src: 'eat',
-              onDone: { target: 'sleeping' },
+              onDone: 'sleeping',
             },
           },
           sleeping: {
             invoke: {
               id: 'sleep',
               src: 'sleep',
-              onDone: { target: 'moving_to_water' },
+              onDone: 'moving_to_water',
             },
           },
         },
@@ -233,6 +223,7 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
       lookAround,
     },
     actions: {
+      logWaiting: () => signale.info('waiting...'),
       disposeContextVariables: (context) => {
         context.items_to_collect = [];
         context.to_deposit = [];
