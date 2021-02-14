@@ -17,6 +17,7 @@ export interface BotMachineContext {
   to_deposit?: Stack[];
   fishing?: boolean;
   farming?: boolean;
+  operators: string[];
   options: {
     eat: boolean;
     sleep: boolean;

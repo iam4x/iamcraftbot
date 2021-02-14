@@ -3,7 +3,11 @@ import { goals } from 'mineflayer-pathfinder';
 
 import { BotMachineContext } from '../types';
 
-export function followPlayer({ bot, follow_username }: BotMachineContext) {
+export function followPlayer({
+  bot,
+  operators,
+  follow_username,
+}: BotMachineContext) {
   return new Promise((resolve) => {
     const target = bot?.players[follow_username!]?.entity;
 
@@ -13,17 +17,18 @@ export function followPlayer({ bot, follow_username }: BotMachineContext) {
     }
 
     // listen for "stop" command
-    const onChat = (username: string, message: string) => {
-      if (username === follow_username && message.toLowerCase() === 'stop') {
+    const onWhisper = (username: string, message: string) => {
+      if (operators.includes(username) && message.toLowerCase() === 'stop') {
         bot?.pathfinder.setGoal(null as any);
-        bot?.off('chat', onChat);
+        bot?.off('whisper', onWhisper);
+        bot?.whisper(username, "I'm not following you anymore");
         return resolve(undefined);
       }
       return undefined;
     };
 
-    bot?.on('chat', onChat);
-    bot?.pathfinder?.setGoal(new goals.GoalFollow(target, 2), true);
+    bot?.on('whisper', onWhisper);
+    bot?.pathfinder?.setGoal(new goals.GoalFollow(target, 1), true);
 
     return undefined;
   });

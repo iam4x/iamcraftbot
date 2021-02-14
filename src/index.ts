@@ -25,6 +25,7 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
     id: 'bot',
     initial: 'logged_out',
     context: {
+      operators: [],
       options: {
         eat: true,
         sleep: true,

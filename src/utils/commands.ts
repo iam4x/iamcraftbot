@@ -11,36 +11,45 @@ export function listenChatCommands(context: BotMachineContext) {
         return undefined;
       }
 
+      // dont listen to non-operators
+      if (!context.operators.includes(username)) {
+        return undefined;
+      }
+
       switch (true) {
         case message === 'come': {
           signale.info(`received "come" command`);
+          context.bot!.whisper(username, "Ok! I'm coming to you");
           context.move_to_username = username;
           return callback({ type: 'MOVE_TO_PLAYER' });
         }
 
         case message === 'follow': {
           signale.info(`received "follow" command`);
+          context.bot!.whisper(username, "Ok! I'm following you");
           context.follow_username = username;
           return callback({ type: 'FOLLOW_PLAYER' });
         }
 
         case message === 'farm': {
           signale.info(`received "farm" command`);
+          context.bot!.whisper(username, "Ok! I'm starting to farm");
           return callback({ type: 'FARM' });
         }
 
         case message === 'fish': {
           signale.info(`received "fish" command`);
+          context.bot!.whisper(username, "Ok! I'm starting to fish");
           return callback({ type: 'FISH' });
         }
 
         case message.startsWith('enable'): {
           const [, option] = message.split(' ');
           if (option in context.options) {
-            context.bot?.chat(`enabled "${option}"`);
+            context.bot?.whisper(username, `enabled "${option}"`);
             context.options[option as keyof typeof context.options] = true;
           } else {
-            context.bot?.chat(`unknown "${option}"`);
+            context.bot?.whisper(username, `unknown "${option}"`);
           }
           return undefined;
         }
@@ -48,10 +57,10 @@ export function listenChatCommands(context: BotMachineContext) {
         case message.startsWith('disable'): {
           const [, option] = message.split(' ');
           if (option in context.options) {
-            context.bot?.chat(`disabled "${option}"`);
+            context.bot?.whisper(username, `disabled "${option}"`);
             context.options[option as keyof typeof context.options] = false;
           } else {
-            context.bot?.chat(`unknown "${option}"`);
+            context.bot?.whisper(username, `unknown "${option}"`);
           }
           return undefined;
         }
@@ -61,9 +70,9 @@ export function listenChatCommands(context: BotMachineContext) {
       }
     };
 
-    context.bot?.on('chat', handler);
+    context.bot?.on('whisper', handler);
     signale.info('bot listening for command');
 
-    return () => context.bot?.off('chat', handler);
+    return () => context.bot?.off('whisper', handler);
   };
 }

@@ -52,6 +52,16 @@ export function initialize(context: BotMachineContext) {
       context.bot = bot;
       context.mcData = mcData;
 
+      // set operators from env
+      context.operators =
+        process.env.OPERATORS?.split(',')?.map((str) => str.trim()) || [];
+
+      if (context.operators.length === 0) {
+        signale.warn('you dont have any operators set, bot will not operate');
+      } else {
+        signale.info(`bot operators: ${process.env.OPERATORS}`);
+      }
+
       bot.off('end', handleConnectError);
       return resolve(undefined);
     });
