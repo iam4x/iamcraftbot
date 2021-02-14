@@ -141,7 +141,13 @@ export function setDepositFarmItems(context: BotMachineContext) {
   const toKeep = TO_HARVEST.map(({ seed }) => seed);
   const inventoryStacks = context.bot!.inventory.slots.reduce(
     (result, item) => {
-      if (item) {
+      if (
+        TO_HARVEST.some(
+          (toHarvestItem) =>
+            item?.name === toHarvestItem.name ||
+            item?.name === toHarvestItem.seed
+        )
+      ) {
         return {
           ...result,
           [item.name]: (result[item.name] || 0) + item.count,
