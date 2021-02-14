@@ -36,9 +36,12 @@ export async function sleep({ bot, options }: BotMachineContext) {
     }
   }
 
-  await bot!
-    .sleep(bed)
-    .catch((err) => signale.warn(`cant sleep: ${err.message}`));
+  try {
+    await bot!.sleep(bed);
+  } catch (err) {
+    signale.warn(`cant sleep: ${err.message}`);
+    return undefined;
+  }
 
   const waitForDay = () =>
     new Promise((resolve) => {
