@@ -14,12 +14,18 @@ const options = {
 };
 
 export function initialize(context: BotMachineContext) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     // initialize bot
     const bot = mineflayer.createBot(options) as Bot;
     bot.loadPlugin(pathfinder);
 
     signale.info('bot created');
+
+    const handleConnectError = () => {
+      const err = 'could not connect to server, retrying in 10 seconds...';
+      signale.error(err);
+      return reject(new Error(err));
+    };
 
     // wait for spawn event
     bot.once('spawn', () => {
@@ -46,11 +52,10 @@ export function initialize(context: BotMachineContext) {
       context.bot = bot;
       context.mcData = mcData;
 
+      bot.off('end', handleConnectError);
       return resolve(undefined);
     });
 
-    bot.on('error', (err: Error) => {
-      signale.error(err);
-    });
+    bot.on('end', handleConnectError);
   });
 }

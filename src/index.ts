@@ -41,7 +41,11 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
               id: 'login',
               src: 'initialize',
               onDone: '#in_game',
+              onError: 'retryConnection',
             },
+          },
+          retryConnection: {
+            after: { [10 * 1000]: 'initializing' },
           },
         },
       },
