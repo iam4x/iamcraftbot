@@ -16,6 +16,8 @@ export async function eat({ bot, mcData, options }: BotMachineContext) {
   if (bot!.food > MINIMUM_FOOD_LEVEL) {
     signale.info(`food level at ${bot!.food}, wont eat`);
     return undefined;
+  } else {
+    signale.info(`should eat, food level at ${bot!.food}`);
   }
 
   const inventoryFood = bot!.inventory.slots
