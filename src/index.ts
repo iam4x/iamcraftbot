@@ -21,15 +21,16 @@ import { BotMachineContext, BotMachineEvent } from './types';
 const botMachine = Machine<BotMachineContext, BotMachineEvent>(
   {
     id: 'bot',
-    initial: 'logged_out',
-    context: {},
+    initial: 'initializing',
+    context: {
+      options: {
+        eat: true,
+        sleep: true,
+      },
+    },
 
     states: {
-      logged_out: {
-        on: { LOGIN: 'logging_in' },
-      },
-
-      logging_in: {
+      initializing: {
         invoke: {
           id: 'login',
           src: 'initialize',
@@ -201,4 +202,3 @@ const botService = interpret(botMachine).onTransition((_state) => {
 });
 
 botService.start();
-botService.send('LOGIN');
