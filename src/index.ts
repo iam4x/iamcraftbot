@@ -23,7 +23,7 @@ import { BotMachineContext, BotMachineEvent } from './types';
 const botMachine = Machine<BotMachineContext, BotMachineEvent>(
   {
     id: 'bot',
-    initial: 'logged_out',
+    initial: 'loggedOut',
     context: {
       operators: [],
       options: {
@@ -33,48 +33,48 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
     },
 
     states: {
-      logged_out: {
-        id: 'logged_out',
-        initial: 'initializing',
+      loggedOut: {
+        id: 'loggedOut',
+        initial: 'loggingIn',
         states: {
-          initializing: {
+          loggingIn: {
             invoke: {
               id: 'login',
               src: 'initialize',
-              onDone: '#in_game',
+              onDone: '#inGame',
               onError: 'retryConnection',
             },
           },
           retryConnection: {
-            after: { [10 * 1000]: 'initializing' },
+            after: { [10 * 1000]: 'loggingIn' },
           },
         },
       },
 
-      in_game: {
-        id: 'in_game',
-        initial: 'restoring_activity',
+      inGame: {
+        id: 'inGame',
+        initial: 'restoringActivity',
         invoke: {
-          id: 'listen_disconnect',
+          id: 'listenDisconnect',
           src: 'listenDisconnect',
           onDone: { target: '.disconnected' },
         },
         states: {
           disconnected: {
-            after: { [10 * 1000]: '#logged_out' },
+            after: { [10 * 1000]: '#loggedOut' },
           },
 
-          restoring_activity: {
-            id: 'restoring_activity',
+          restoringActivity: {
+            id: 'restoringActivity',
             always: [
               { target: 'farming', cond: ({ farming }) => farming === true },
               { target: 'fishing', cond: ({ fishing }) => fishing === true },
-              { target: 'listening_chat_commands' },
+              { target: 'waitingForCommand' },
             ],
           },
 
-          listening_chat_commands: {
-            id: 'listening_chat_commands',
+          waitingForCommand: {
+            id: 'waitingForCommand',
             activities: ['lookAround'],
             invoke: {
               id: 'listen_chat_commands',
@@ -83,28 +83,28 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
             on: {
               FARM: 'farming',
               FISH: 'fishing',
-              MOVE_TO_PLAYER: 'moving_to_player',
-              FOLLOW_PLAYER: 'following_player',
+              MOVE_TO_PLAYER: 'movingToPlayer',
+              FOLLOW_PLAYER: 'followingPlayer',
             },
           },
 
-          moving_to_player: {
+          movingToPlayer: {
             invoke: {
-              id: 'move_to_player',
+              id: 'moveToPlayer',
               src: 'moveToPlayer',
               onDone: {
-                target: 'listening_chat_commands',
+                target: 'waitingForCommand',
                 actions: 'disposeContextVariables',
               },
             },
           },
 
-          following_player: {
+          followingPlayer: {
             invoke: {
-              id: 'follow_player',
+              id: 'followPlayer',
               src: 'followPlayer',
               onDone: {
-                target: 'listening_chat_commands',
+                target: 'waitingForCommand',
                 actions: 'disposeContextVariables',
               },
             },
@@ -114,10 +114,10 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
             initial: 'harvesting',
             entry: (context) => (context.farming = true),
             invoke: {
-              id: 'wait_for_stop',
+              id: 'waitForStop',
               src: 'waitForStop',
               onDone: {
-                target: 'listening_chat_commands',
+                target: 'waitingForCommand',
                 actions: (context) => {
                   context.bot!.unequip('hand');
                   context.farming = false;
@@ -159,12 +159,12 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
                   id: 'eat',
                   src: 'eat',
                   onDone: {
-                    target: 'emptying_inventory',
+                    target: 'emptyingInventory',
                     actions: 'setDepositFarmItems',
                   },
                 },
               },
-              emptying_inventory: {
+              emptyingInventory: {
                 invoke: {
                   id: 'deposit',
                   src: 'deposit',
@@ -190,13 +190,13 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
           },
 
           fishing: {
-            initial: 'moving_to_water',
+            initial: 'movingNearWater',
             entry: (context) => (context.fishing = true),
             invoke: {
-              id: 'wait_for_stop',
+              id: 'waitForStop',
               src: 'waitForStop',
               onDone: {
-                target: 'listening_chat_commands',
+                target: 'waitingForCommand',
                 actions: (context) => {
                   context.bot!.unequip('hand');
                   context.fishing = false;
@@ -204,26 +204,26 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
               },
             },
             states: {
-              moving_to_water: {
+              movingNearWater: {
                 invoke: {
-                  id: 'move_to_water',
+                  id: 'moveNearWater',
                   src: 'moveNearWater',
-                  onDone: 'waiting_for_fish',
-                  onError: '..listening_chat_commands',
+                  onDone: 'waitingForFish',
+                  onError: '..waitingForCommand',
                 },
               },
-              waiting_for_fish: {
+              waitingForFish: {
                 invoke: {
-                  id: 'wait_for_fish',
+                  id: 'waitForFish',
                   src: 'waitForFish',
                   onDone: {
-                    target: 'emptying_inventory',
+                    target: 'emptyingInventory',
                     actions: 'setDepositFishingItems',
                   },
-                  onError: '..listening_chat_commands',
+                  onError: '..waitingForCommand',
                 },
               },
-              emptying_inventory: {
+              emptyingInventory: {
                 invoke: {
                   id: 'deposit',
                   src: 'deposit',
@@ -244,7 +244,7 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
                 invoke: {
                   id: 'sleep',
                   src: 'sleep',
-                  onDone: 'moving_to_water',
+                  onDone: 'movingNearWater',
                 },
               },
             },
