@@ -118,7 +118,10 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
               src: 'waitForStop',
             },
             on: {
-              STOP: '#waitingForCommand',
+              STOP: {
+                target: '#waitingForCommand',
+                actions: (context) => (context.farming = false),
+              },
             },
             states: {
               harvesting: {
@@ -193,7 +196,10 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
               src: 'waitForStop',
             },
             on: {
-              STOP: '#waitingForCommand',
+              STOP: {
+                target: '#waitingForCommand',
+                actions: (context) => (context.fishing = false),
+              },
             },
             states: {
               movingNearWater: {
