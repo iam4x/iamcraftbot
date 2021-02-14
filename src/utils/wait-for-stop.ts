@@ -16,6 +16,7 @@ export function waitForStop(context: BotMachineContext) {
 
       if (message.toLowerCase() === 'stop') {
         context.bot?.off('whisper', handler);
+        context.bot!.unequip('hand');
         context.bot?.whisper(username, 'Ok, I stop');
         signale.info('received stop command');
         return resolve(undefined);

@@ -118,10 +118,7 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
               src: 'waitForStop',
               onDone: {
                 target: 'waitingForCommand',
-                actions: (context) => {
-                  context.bot!.unequip('hand');
-                  context.farming = false;
-                },
+                actions: (context) => (context.farming = false),
               },
             },
             states: {
@@ -197,10 +194,7 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
               src: 'waitForStop',
               onDone: {
                 target: 'waitingForCommand',
-                actions: (context) => {
-                  context.bot!.unequip('hand');
-                  context.fishing = false;
-                },
+                actions: (context) => (context.fishing = false),
               },
             },
             states: {
