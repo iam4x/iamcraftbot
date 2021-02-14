@@ -7,7 +7,6 @@ import { Vec3 } from 'vec3';
 import { moveTo } from './move-to';
 import { Bot, BotMachineContext } from '../types';
 
-// TODO: Sleep at night
 // TODO: Check to eat as well
 
 export const TO_HARVEST = [
@@ -46,6 +45,7 @@ export async function harvest({
 }: BotMachineContext): Promise<void> {
   const blockToHarvest = bot?.findBlock({
     useExtraInfo: true,
+    maxDistance: 32,
     matching: (b) =>
       TO_HARVEST.some(
         ({ name, metadata }) => name === b.name && metadata === b.metadata
@@ -96,6 +96,7 @@ export async function harvest({
 export async function plant({ bot, mcData }: BotMachineContext): Promise<void> {
   const blockToPlant = bot?.findBlock({
     useExtraInfo: true,
+    maxDistance: 32,
     matching: (b) => {
       if (b && b.type === mcData?.blocksByName.farmland!.id) {
         const blockAbove = bot?.blockAt(b.position.offset(0, 1, 0));
@@ -169,12 +170,12 @@ export function setDepositFarmItems(context: BotMachineContext) {
   );
 
   const toDeposit = Object.entries(inventoryStacks)
-    .filter(([, count]) => count > 0)
     .map(([item, count]) =>
       toKeep.includes(item)
         ? { name: item, count: count - 64 }
         : { name: item, count }
-    );
+    )
+    .filter(({ count }) => count > 0);
 
   context.to_deposit = toDeposit;
 }

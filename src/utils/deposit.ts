@@ -12,12 +12,13 @@ export async function deposit({ bot, mcData, to_deposit }: BotMachineContext) {
   const totalCount = sum(to_deposit?.map(({ count }) => count));
 
   if (!totalCount) {
-    signale.warn('no items to deposit');
+    signale.info('no items to deposit');
     return undefined;
   }
 
   const nearestChest = bot?.findBlock({
     useExtraInfo: true,
+    maxDistance: 32,
     matching: mcData!.blocksByName.chest!.id,
   });
 
@@ -79,7 +80,7 @@ export async function deposit({ bot, mcData, to_deposit }: BotMachineContext) {
   }, [] as Stack[]);
 
   if (!stacks?.length) {
-    signale.warn('no items to deposit');
+    signale.info('no items to deposit');
     return undefined;
   }
 

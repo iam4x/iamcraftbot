@@ -11,6 +11,7 @@ import { listenChatCommands } from './utils/commands';
 import { waitForStop } from './utils/wait-for-stop';
 import { collectGroundItems } from './utils/collect-ground-items';
 import { deposit } from './utils/deposit';
+import { sleep } from './utils/sleep';
 import * as farm from './utils/farm';
 
 import { BotMachineContext, BotMachineEvent } from './types';
@@ -130,17 +131,26 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
           emptying_inventory: {
             invoke: {
               id: 'deposit',
-              src: deposit,
+              src: 'deposit',
               onDone: {
-                target: 'waiting',
+                target: 'sleeping',
                 actions: 'disposeContextVariables',
               },
             },
           },
+          sleeping: {
+            invoke: {
+              id: 'sleep',
+              src: 'sleep',
+              onDone: {
+                target: 'waiting',
+              },
+            },
+          },
           waiting: {
-            entry: () => signale.info('waiting 10 seconds...'),
+            entry: () => signale.info('waiting...'),
             activities: ['lookAround'],
-            after: { [10 * 1000]: 'harvesting' },
+            after: { 2000: 'harvesting' },
           },
         },
       },
@@ -153,6 +163,8 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
       initialize,
       listenChatCommands,
       waitForStop,
+      deposit,
+      sleep,
       collectGroundItems,
       plant: farm.plant,
       harvest: farm.harvest,
