@@ -35,12 +35,22 @@ export async function moveNearWater({ bot, mcData }: BotMachineContext) {
 }
 
 export async function waitForFish({ bot, mcData }: BotMachineContext) {
+  const hasFishingRod = bot!.inventory
+    .items()
+    .some((item) => item.name === 'fishing_rod');
+
+  if (!hasFishingRod) {
+    const err = new Error('does not have fishing rod');
+    signale.warn(err.message);
+    throw err;
+  }
+
   try {
     signale.info('equip fishing rod');
     await bot!.equip(mcData!.itemsByName.fishing_rod!.id as any, 'hand');
   } catch (err) {
     signale.warn(`could not equip fishing rod: ${err.message}`);
-    throw new Error(`could not equip fishing rod: ${err.message}`);
+    throw err;
   }
 
   try {

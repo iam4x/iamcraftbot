@@ -29,4 +29,6 @@ export type BotMachineEvent =
   | { type: 'MOVE_TO_PLAYER' }
   | { type: 'FOLLOW_PLAYER' }
   | { type: 'FARM' }
-  | { type: 'FISH' };
+  | { type: 'FISH' }
+  | { type: 'ERROR' }
+  | { type: 'STOP' };

@@ -22,7 +22,7 @@ export function initialize(context: BotMachineContext) {
     signale.info('bot created');
 
     const handleConnectError = () => {
-      const err = 'could not connect to server, retrying in 10 seconds...';
+      const err = 'could not connect to server, retrying in 5 seconds...';
       signale.error(err);
       return reject(new Error(err));
     };

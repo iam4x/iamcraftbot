@@ -1,7 +1,7 @@
 require('dotenv').config();
 
 import signale from 'signale';
-import { interpret, Machine } from 'xstate';
+import { interpret, Machine, send } from 'xstate';
 
 import { lookAround } from './utils/look-around';
 import { followPlayer } from './utils/follow-player';
@@ -46,7 +46,7 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
             },
           },
           retryConnection: {
-            after: { [10 * 1000]: 'loggingIn' },
+            after: { 5000: 'loggingIn' },
           },
         },
       },
@@ -61,7 +61,7 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
         },
         states: {
           disconnected: {
-            after: { [10 * 1000]: '#loggedOut' },
+            after: { 5000: '#loggedOut' },
           },
 
           restoringActivity: {
@@ -116,10 +116,9 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
             invoke: {
               id: 'waitForStop',
               src: 'waitForStop',
-              onDone: {
-                target: 'waitingForCommand',
-                actions: (context) => (context.farming = false),
-              },
+            },
+            on: {
+              STOP: '#waitingForCommand',
             },
             states: {
               harvesting: {
@@ -192,10 +191,9 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
             invoke: {
               id: 'waitForStop',
               src: 'waitForStop',
-              onDone: {
-                target: 'waitingForCommand',
-                actions: (context) => (context.fishing = false),
-              },
+            },
+            on: {
+              STOP: '#waitingForCommand',
             },
             states: {
               movingNearWater: {
@@ -203,7 +201,9 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
                   id: 'moveNearWater',
                   src: 'moveNearWater',
                   onDone: 'waitingForFish',
-                  onError: '..waitingForCommand',
+                  onError: {
+                    actions: send('ERROR', { to: 'waitForStop' }),
+                  },
                 },
               },
               waitingForFish: {
@@ -214,7 +214,9 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
                     target: 'emptyingInventory',
                     actions: 'setDepositFishingItems',
                   },
-                  onError: '..waitingForCommand',
+                  onError: {
+                    actions: send('ERROR', { to: 'waitForStop' }),
+                  },
                 },
               },
               emptyingInventory: {

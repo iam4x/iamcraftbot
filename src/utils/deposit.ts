@@ -94,6 +94,7 @@ export async function deposit({ bot, mcData, to_deposit }: BotMachineContext) {
       );
     } catch (err) {
       signale.warn(`could not deposit [${stack.name} x ${stack.count}]`);
+      signale.warn(err.message);
     }
   }
 
