@@ -172,7 +172,7 @@ export function setDepositFarmItems(context: BotMachineContext) {
   const toDeposit = Object.entries(inventoryStacks)
     .map(([item, count]) =>
       toKeep.includes(item)
-        ? { name: item, count: count - 64 }
+        ? { name: item, count: count - 32 }
         : { name: item, count }
     )
     .filter(({ count }) => count > 0);
