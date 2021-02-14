@@ -267,11 +267,6 @@
     "@xboxreplay/errors" "^0.1.0"
     axios "^0.21.1"
 
-"@xstate/fsm@^1.6.0":
-  version "1.6.0"
-  resolved "https://registry.yarnpkg.com/@xstate/fsm/-/fsm-1.6.0.tgz#589cefcef426d5bf3d654edbca89e84e3b637c5f"
-  integrity sha512-YJpzKLPxMBUUQCTkjIbicsax6svTbPz5ykTkotIaa3kOoTnBJ4CWfC0cSQuMg7FAsfV2XWOuEsFq0dbmY7NtXg==
-
 acorn-jsx@^5.3.1:
   version "5.3.1"
   resolved "https://registry.yarnpkg.com/acorn-jsx/-/acorn-jsx-5.3.1.tgz#fc8661e11b7ac1539c47dbfea2e72b3af34d267b"
