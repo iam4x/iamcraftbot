@@ -6,9 +6,14 @@ import { BotMachineContext } from '../types';
 
 const MINIMUM_FOOD_LEVEL = 16;
 
-export async function eat({ bot, mcData }: BotMachineContext) {
+export async function eat({ bot, mcData, options }: BotMachineContext) {
+  if (options.eat === false) {
+    signale.info('eat is disabled, continue');
+    return undefined;
+  }
+
   if (bot!.food > MINIMUM_FOOD_LEVEL) {
-    signale.log(`food level at ${bot!.food}, wont eat`);
+    signale.info(`food level at ${bot!.food}, wont eat`);
     return undefined;
   }
 
@@ -26,7 +31,7 @@ export async function eat({ bot, mcData }: BotMachineContext) {
   const foodIds = map(orderBy(inventoryFood, 'foodPoints'), 'id');
   const recursiveEat = async (): Promise<void> => {
     try {
-      signale.log(`bot is having lunch`);
+      signale.info(`bot is having lunch`);
       await trySelectAnyItem(bot!, foodIds);
       await bot!.consume(undefined as any);
     } catch (err) {

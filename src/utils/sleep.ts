@@ -1,10 +1,15 @@
-import { goals } from 'mineflayer-pathfinder';
 import signale from 'signale';
+import { goals } from 'mineflayer-pathfinder';
 
 import { moveTo } from './move-to';
 import { BotMachineContext } from '../types';
 
-export async function sleep({ bot }: BotMachineContext) {
+export async function sleep({ bot, options }: BotMachineContext) {
+  if (options.sleep === false) {
+    signale.info('sleep is disabled, continue');
+    return undefined;
+  }
+
   if (bot!.time.isDay) {
     signale.info('daytime, wont sleep');
     return undefined;
