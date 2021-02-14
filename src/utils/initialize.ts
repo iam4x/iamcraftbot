@@ -1,6 +1,5 @@
 import signale from 'signale';
 import mineflayer from 'mineflayer';
-import inventoryViewer from 'mineflayer-web-inventory';
 import armorManager from 'mineflayer-armor-manager';
 import { IndexedData } from 'minecraft-data';
 import { Movements, pathfinder } from 'mineflayer-pathfinder';
@@ -43,9 +42,6 @@ export function initialize() {
       bot.pathfinder.movements.blocksCantBreak = new Set(
         mcData.blocksArray.map((b) => b.id)
       );
-
-      // initialize webInventory
-      inventoryViewer(bot, { host: '0.0.0.0', port: 3080 });
 
       // save bot instance
       // save mcData for version
