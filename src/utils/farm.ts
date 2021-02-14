@@ -5,9 +5,9 @@ import { IndexedData } from 'minecraft-data';
 import { Vec3 } from 'vec3';
 
 import { moveTo } from './move-to';
-import { Bot, BotMachineContext } from '../types';
+import { trySelectAnyItem } from './select-any-item';
 
-// TODO: Check to eat as well
+import { BotMachineContext } from '../types';
 
 export const TO_HARVEST = [
   { name: 'wheat', metadata: 7, seed: 'wheat_seeds' },
@@ -20,23 +20,6 @@ function getSeedsIds(data: IndexedData) {
   return shuffle(data.itemsArray)
     .filter((item) => TO_HARVEST.some(({ seed }) => item.name === seed))
     .map((item) => item.id);
-}
-
-function trySelectAnyItem(bot: Bot, itemsIds: number[]) {
-  function tryItem(itemId: number): Promise<boolean> {
-    return bot
-      .equip(itemId as any, 'hand')
-      .then(() => true)
-      .catch(() => {
-        const nextItem =
-          itemsIds.indexOf(itemId) === itemsIds.length - 1
-            ? false
-            : itemsIds[itemsIds.indexOf(itemId) + 1];
-        return nextItem ? tryItem(nextItem) : false;
-      });
-  }
-
-  return tryItem(itemsIds[0]);
 }
 
 export async function harvest({

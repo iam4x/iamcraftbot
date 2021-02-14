@@ -12,6 +12,7 @@ import { waitForStop } from './utils/wait-for-stop';
 import { collectGroundItems } from './utils/collect-ground-items';
 import { deposit } from './utils/deposit';
 import { sleep } from './utils/sleep';
+import { eat } from './utils/eat';
 import * as farm from './utils/farm';
 
 import { BotMachineContext, BotMachineEvent } from './types';
@@ -125,7 +126,14 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
               id: 'plant',
               src: 'plant',
               onDone: { target: 'planting' },
-              onError: {
+              onError: { target: 'eating' },
+            },
+          },
+          eating: {
+            invoke: {
+              id: 'eat',
+              src: 'eat',
+              onDone: {
                 target: 'emptying_inventory',
                 actions: 'setDepositFarmItems',
               },
@@ -159,13 +167,14 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
   },
   {
     services: {
+      eat,
+      sleep,
       followPlayer,
       moveToPlayer,
       initialize,
       listenChatCommands,
       waitForStop,
       deposit,
-      sleep,
       collectGroundItems,
       plant: farm.plant,
       harvest: farm.harvest,
