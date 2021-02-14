@@ -15,6 +15,8 @@ export interface BotMachineContext {
   follow_username?: string;
   items_to_collect?: string[];
   to_deposit?: Stack[];
+  fishing?: boolean;
+  farming?: boolean;
   options: {
     eat: boolean;
     sleep: boolean;

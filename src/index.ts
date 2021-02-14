@@ -48,7 +48,7 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
 
       in_game: {
         id: 'in_game',
-        initial: 'listening_chat_commands',
+        initial: 'restoring_activity',
         invoke: {
           id: 'listen_disconnect',
           src: 'listenDisconnect',
@@ -57,6 +57,15 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
         states: {
           disconnected: {
             after: { [10 * 1000]: '#logged_out' },
+          },
+
+          restoring_activity: {
+            id: 'restoring_activity',
+            always: [
+              { target: 'farming', cond: ({ farming }) => farming === true },
+              { target: 'fishing', cond: ({ fishing }) => fishing === true },
+              { target: 'listening_chat_commands' },
+            ],
           },
 
           listening_chat_commands: {
@@ -98,10 +107,14 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
 
           farming: {
             initial: 'harvesting',
+            entry: (context) => (context.farming = true),
             invoke: {
               id: 'wait_for_stop',
               src: 'waitForStop',
-              onDone: 'listening_chat_commands',
+              onDone: {
+                target: 'listening_chat_commands',
+                actions: (context) => (context.farming = false),
+              },
             },
             states: {
               harvesting: {
@@ -170,10 +183,14 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
 
           fishing: {
             initial: 'moving_to_water',
+            entry: (context) => (context.fishing = true),
             invoke: {
               id: 'wait_for_stop',
               src: 'waitForStop',
-              onDone: 'listening_chat_commands',
+              onDone: {
+                target: 'listening_chat_commands',
+                actions: (context) => (context.fishing = false),
+              },
             },
             states: {
               moving_to_water: {
