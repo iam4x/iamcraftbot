@@ -14,6 +14,7 @@ import { deposit } from './utils/deposit';
 import { sleep } from './utils/sleep';
 import { eat } from './utils/eat';
 import * as farm from './utils/farm';
+import * as fish from './utils/fish';
 
 import { BotMachineContext, BotMachineEvent } from './types';
 
@@ -46,28 +47,16 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
 
       listening_chat_commands: {
         id: 'listening_chat_commands',
-
         activities: ['lookAround'],
-
         invoke: {
           id: 'listen_chat_commands',
           src: 'listenChatCommands',
         },
-
         on: {
           FARM: 'farming',
-          MOVE_TO_PLAYER: {
-            target: 'moving_to_player',
-            actions: assign({
-              move_to_username: (_context, event) => event.data.username,
-            }),
-          },
-          FOLLOW_PLAYER: {
-            target: 'following_player',
-            actions: assign({
-              follow_username: (_context, event) => event.data.username,
-            }),
-          },
+          FISH: 'fishing',
+          MOVE_TO_PLAYER: 'moving_to_player',
+          FOLLOW_PLAYER: 'following_player',
         },
       },
 
@@ -164,6 +153,64 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
           },
         },
       },
+
+      fishing: {
+        initial: 'moving_to_water',
+        invoke: {
+          id: 'wait_for_stop',
+          src: 'waitForStop',
+          onDone: { target: 'listening_chat_commands' },
+        },
+        states: {
+          moving_to_water: {
+            invoke: {
+              id: 'move_to_water',
+              src: 'moveNearWater',
+              onDone: { target: 'waiting_for_fish' },
+              onError: { target: '#listening_chat_commands' },
+            },
+          },
+          waiting_for_fish: {
+            invoke: {
+              id: 'wait_for_fish',
+              src: 'waitForFish',
+              onDone: {
+                target: 'emptying_inventory',
+                actions: 'setDepositFishingItems',
+              },
+              onError: { target: '#listening_chat_commands' },
+            },
+          },
+          emptying_inventory: {
+            invoke: {
+              id: 'deposit',
+              src: 'deposit',
+              onDone: {
+                target: 'eating',
+                actions: 'disposeContextVariables',
+              },
+              onError: {
+                target: 'eating',
+                actions: 'disposeContextVariables',
+              },
+            },
+          },
+          eating: {
+            invoke: {
+              id: 'eat',
+              src: 'eat',
+              onDone: { target: 'sleeping' },
+            },
+          },
+          sleeping: {
+            invoke: {
+              id: 'sleep',
+              src: 'sleep',
+              onDone: { target: 'moving_to_water' },
+            },
+          },
+        },
+      },
     },
   },
   {
@@ -179,6 +226,8 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
       collectGroundItems,
       plant: farm.plant,
       harvest: farm.harvest,
+      moveNearWater: fish.moveNearWater,
+      waitForFish: fish.waitForFish,
     },
     activities: {
       lookAround,
@@ -192,6 +241,7 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
       },
       setDepositFarmItems: farm.setDepositFarmItems,
       setCollectFarmItems: farm.setCollectFarmItems,
+      setDepositFishingItems: fish.setDepositFishingItems,
     },
   }
 );

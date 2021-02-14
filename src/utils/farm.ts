@@ -60,7 +60,7 @@ export async function harvest({
     ?.equip(seedId as any, 'hand')
     .then(() => true)
     .catch(() => {
-      signale.info('bot has no seeds to plant');
+      signale.info(`bot has no ${seed} to plant`);
       return false;
     });
 

@@ -7,34 +7,31 @@ export function listenChatCommands(context: BotMachineContext) {
   return (callback: Sender<BotMachineEvent>) => {
     const handler = (username: string, message: string) => {
       // dont listen to own bot messages
-      console.log(context.bot?.player.username);
-      console.log(context.bot?.username);
       if (context?.bot?.username === username) {
         return undefined;
       }
 
-      console.log({ username, message });
-
       switch (true) {
         case message === 'come': {
           signale.info(`received "come" command`);
-          return callback({
-            type: 'MOVE_TO_PLAYER',
-            data: { username },
-          });
+          context.move_to_username = username;
+          return callback({ type: 'MOVE_TO_PLAYER' });
         }
 
         case message === 'follow': {
           signale.info(`received "follow" command`);
-          return callback({
-            type: 'FOLLOW_PLAYER',
-            data: { username },
-          });
+          context.follow_username = username;
+          return callback({ type: 'FOLLOW_PLAYER' });
         }
 
         case message === 'farm': {
           signale.info(`received "farm" command`);
           return callback({ type: 'FARM' });
+        }
+
+        case message === 'fish': {
+          signale.info(`received "fish" command`);
+          return callback({ type: 'FISH' });
         }
 
         case message.startsWith('enable'): {

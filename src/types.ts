@@ -6,14 +6,6 @@ export type Stack = { name: string; count: number };
 
 export interface Bot extends mineflayer.Bot {
   pathfinder: Pathfinder;
-  webInventory: {
-    isRunning: boolean;
-    start: () => void;
-    stop: () => void;
-  };
-  autoEat: {
-    options: Record<string, any>;
-  };
 }
 
 export interface BotMachineContext {
@@ -31,6 +23,7 @@ export interface BotMachineContext {
 
 export type BotMachineEvent =
   | { type: 'LOGIN' }
-  | { type: 'MOVE_TO_PLAYER'; data: { username: string } }
-  | { type: 'FOLLOW_PLAYER'; data: { username: string } }
-  | { type: 'FARM' };
+  | { type: 'MOVE_TO_PLAYER' }
+  | { type: 'FOLLOW_PLAYER' }
+  | { type: 'FARM' }
+  | { type: 'FISH' };
