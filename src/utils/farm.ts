@@ -142,6 +142,7 @@ export function setDepositFarmItems(context: BotMachineContext) {
   const inventoryStacks = context.bot!.inventory.slots.reduce(
     (result, item) => {
       if (
+        item?.name === 'poisonous_potato' ||
         TO_HARVEST.some(
           (toHarvestItem) =>
             item?.name === toHarvestItem.name ||
