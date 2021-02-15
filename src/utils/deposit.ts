@@ -40,7 +40,7 @@ export async function deposit({ bot, mcData, to_deposit }: BotMachineContext) {
     }
   }
 
-  const chest = await bot?.openChest(nearestChest);
+  let chest = await bot!.openChest(nearestChest);
   const chestSize = (chest as any).type === 'minecraft:generic_9x6' ? 54 : 27;
 
   const items = (chest as any).containerItems() || [];
@@ -87,17 +87,26 @@ export async function deposit({ bot, mcData, to_deposit }: BotMachineContext) {
   for (const stack of take(stacks, remainingSlots)) {
     try {
       signale.info(`deposit [${stack.name} x ${stack.count}]`);
-      await chest?.deposit(
-        mcData?.itemsByName[stack.name].id!,
+      await chest.deposit(
+        mcData!.itemsByName[stack.name].id!,
         null,
         stack.count
       );
     } catch (err) {
       signale.warn(`could not deposit [${stack.name} x ${stack.count}]`);
       signale.warn(err.message);
+      // reset chest by closing and open again
+      // when `server rejected transaction` error occurs
+      chest.close();
+      chest = await bot!.openChest(nearestChest);
     }
   }
 
-  chest?.close();
+  try {
+    chest.close();
+  } catch (err) {
+    signale.warn(`could not close chest ${err.message}`);
+  }
+
   return undefined;
 }
