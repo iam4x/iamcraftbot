@@ -25,6 +25,7 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
     id: 'bot',
     initial: 'loggedOut',
     context: {
+      retries: 0,
       operators: [],
       options: {
         eat: true,
@@ -190,7 +191,10 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
 
           fishing: {
             initial: 'movingNearWater',
-            entry: (context) => (context.fishing = true),
+            entry: (context) => {
+              context.retries = 0;
+              context.fishing = true;
+            },
             invoke: {
               id: 'waitForStop',
               src: 'waitForStop',
@@ -198,7 +202,10 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
             on: {
               STOP: {
                 target: '#waitingForCommand',
-                actions: (context) => (context.fishing = false),
+                actions: (context) => {
+                  context.retries = 0;
+                  context.fishing = false;
+                },
               },
             },
             states: {
@@ -207,9 +214,15 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
                   id: 'moveNearWater',
                   src: 'moveNearWater',
                   onDone: 'waitingForFish',
-                  onError: {
-                    actions: send('ERROR', { to: 'waitForStop' }),
-                  },
+                  onError: [
+                    {
+                      target: 'movingNearWater',
+                      cond: (context) => ++context.retries < 10,
+                    },
+                    {
+                      actions: send('ERROR', { to: 'waitForStop' }),
+                    },
+                  ],
                 },
               },
               waitingForFish: {
@@ -220,9 +233,15 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
                     target: 'emptyingInventory',
                     actions: 'setDepositFishingItems',
                   },
-                  onError: {
-                    actions: send('ERROR', { to: 'waitForStop' }),
-                  },
+                  onError: [
+                    {
+                      target: 'movingNearWater',
+                      cond: (context) => ++context.retries < 10,
+                    },
+                    {
+                      actions: send('ERROR', { to: 'waitForStop' }),
+                    },
+                  ],
                 },
               },
               emptyingInventory: {

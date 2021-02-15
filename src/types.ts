@@ -18,6 +18,7 @@ export interface BotMachineContext {
   fishing?: boolean;
   farming?: boolean;
   operators: string[];
+  retries: number;
   options: {
     eat: boolean;
     sleep: boolean;
