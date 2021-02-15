@@ -231,7 +231,7 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
                   src: 'waitForFish',
                   onDone: {
                     target: 'emptyingInventory',
-                    actions: 'setDepositFishingItems',
+                    actions: ['setDepositFishingItems', 'resetRetries'],
                   },
                   onError: [
                     {
@@ -296,6 +296,7 @@ const botMachine = Machine<BotMachineContext, BotMachineEvent>(
     },
     actions: {
       logWaiting: () => signale.info('waiting...'),
+      resetRetries: (context) => (context.retries = 0),
       disposeContextVariables: (context) => {
         context.items_to_collect = [];
         context.to_deposit = [];
