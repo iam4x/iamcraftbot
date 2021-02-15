@@ -1,5 +1,6 @@
-import { goals } from 'mineflayer-pathfinder';
 import signale from 'signale';
+import { isEqual } from 'lodash';
+import { goals } from 'mineflayer-pathfinder';
 
 import { moveTo } from './move-to';
 import { ACCEPTABLE_FOOD } from './eat';
@@ -34,20 +35,67 @@ export async function moveNearWater({ bot, mcData }: BotMachineContext) {
   return undefined;
 }
 
-export async function waitForFish({ bot, mcData }: BotMachineContext) {
-  const hasFishingRod = bot!.inventory
-    .items()
-    .some((item) => item.name === 'fishing_rod');
+const bestEnchants = {
+  luck_of_the_sea: 3,
+  mending: 1,
+  unbreaking: 3,
+};
 
-  if (!hasFishingRod) {
+export async function waitForFish({ bot }: BotMachineContext) {
+  const bestFishingRod = bot!.inventory
+    .items()
+    // remove other than fishing_rod items
+    .filter((item) => item.name === 'fishing_rod')
+    // map to item and accessible enchants object
+    .map((item) => {
+      const enchantements: Record<string, number> = Object.fromEntries(
+        (item?.nbt as any)?.value?.Enchantments?.value?.value?.map(
+          ({ id, lvl }: any) => [id.value.replace('minecraft:', ''), lvl.value]
+        ) || []
+      );
+
+      signale.info(`found fishing_rod: ${JSON.stringify(enchantements)}`);
+
+      return { item, enchantements };
+    })
+    // compare fishing rod by enchants
+    .reduce<{ item: any; enchantements: Record<string, number> } | undefined>(
+      (result, fishingRod) => {
+        if (!result) return fishingRod;
+
+        // best enchants possible
+        if (isEqual(result.enchantements, bestEnchants)) return result;
+        if (isEqual(fishingRod.enchantements, bestEnchants)) return fishingRod;
+
+        const currCount = Object.entries(result.enchantements).length;
+        const nextCount = Object.entries(fishingRod.enchantements).length;
+
+        // will take the fishing rod with most enchants
+        // and the biggest enchant level for each
+        if (nextCount > currCount || currCount === nextCount) {
+          return Object.entries(fishingRod.enchantements).every(
+            ([id, lvl]) => lvl >= (result.enchantements[id] || 0)
+          )
+            ? fishingRod
+            : result;
+        }
+
+        return result;
+      },
+      undefined
+    );
+
+  if (!bestFishingRod) {
     const err = new Error('does not have fishing rod');
     signale.warn(err.message);
     throw err;
   }
 
   try {
-    signale.info('equip fishing rod');
-    await bot!.equip(mcData!.itemsByName.fishing_rod!.id as any, 'hand');
+    signale.info(
+      `equip fishing rod ${JSON.stringify(bestFishingRod.enchantements)}`
+    );
+    await bot!.equip(bestFishingRod.item, 'hand');
   } catch (err) {
     signale.warn(`could not equip fishing rod: ${err.message}`);
     throw err;
@@ -73,9 +121,10 @@ export function setDepositFishingItems(context: BotMachineContext) {
     {} as Record<string, number>
   );
 
-  // keep one fishing rod in inventory
+  // keep fishing rods in inventory until we can
+  // deposit a specific one (see: https://github.com/PrismarineJS/mineflayer/issues/1388)
   if ('fishing_rod' in inventoryStacks) {
-    inventoryStacks.fishing_rod -= 1;
+    delete inventoryStacks.fishing_rod;
   }
 
   const toDeposit = Object.entries(inventoryStacks)
