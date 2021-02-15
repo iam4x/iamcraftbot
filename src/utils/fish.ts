@@ -101,8 +101,22 @@ export async function waitForFish({ bot }: BotMachineContext) {
     throw err;
   }
 
+  // sometimes shit happens, hook is going into ground instead of water
+  // and we can wait for ever to catch something...
+  const timedOutFishing = () =>
+    new Promise((resolve, reject) => {
+      const timeout = setTimeout(
+        () => reject(new Error('timed out')),
+        30 * 1000
+      );
+      bot!.fish((err) => {
+        clearTimeout(timeout);
+        return err ? reject(err) : resolve(undefined);
+      });
+    });
+
   try {
-    await bot!.fish(undefined as any);
+    await timedOutFishing();
     signale.info('caught something!');
   } catch (err) {
     signale.warn(`error while fishing: ${err.message}`);
