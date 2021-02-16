@@ -5,7 +5,8 @@
   "license": "MIT",
   "scripts": {
     "start": "ts-node src/index.ts",
-    "dev": "yarn && yarn ts-node-dev --poll --interval 1000 --respawn --transpile-only --ignore-watch node_modules src/index.ts"
+    "dev": "yarn && yarn ts-node-dev --poll --interval 1000 --respawn --transpile-only --ignore-watch node_modules src/index.ts",
+    "lint": "yarn eslint --ext .ts ."
   },
   "devDependencies": {
     "@types/lodash": "^4.14.168",
