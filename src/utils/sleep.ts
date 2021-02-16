@@ -43,10 +43,11 @@ export async function sleep({ bot, options }: BotMachineContext) {
     return undefined;
   }
 
+  let loops = 0;
   const waitForDay = () =>
     new Promise((resolve) => {
       const loop = () => {
-        if (bot?.time.isDay) {
+        if (bot?.time.isDay || ++loops > 3) {
           bot
             .wake()
             .then(() => resolve(undefined))
