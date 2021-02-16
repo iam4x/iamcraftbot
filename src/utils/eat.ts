@@ -29,6 +29,19 @@ export async function eat({ bot, mcData, options }: BotMachineContext) {
     return undefined;
   }
 
+  const timedOutEat = () =>
+    new Promise((resolve, reject) => {
+      const timeout = setTimeout(
+        () => reject(new Error('eating timed out')),
+        5000
+      );
+      bot!.consume((err) => {
+        if (err) return reject(err);
+        clearTimeout(timeout);
+        return resolve(undefined);
+      });
+    });
+
   const foodIds = map(orderBy(inventoryFood, 'foodPoints'), 'id');
   const recursiveEat = async (): Promise<void> => {
     const selectedFood = await trySelectAnyItem(bot!, foodIds);
@@ -40,7 +53,7 @@ export async function eat({ bot, mcData, options }: BotMachineContext) {
 
     try {
       signale.info(`bot is having lunch`);
-      await bot!.consume(undefined as any);
+      await timedOutEat();
     } catch (err) {
       signale.warn(`could not eat: ${err.message}`);
       return undefined;
