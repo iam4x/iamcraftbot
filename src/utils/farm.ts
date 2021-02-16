@@ -94,7 +94,7 @@ export async function plant({ bot, mcData }: BotMachineContext): Promise<void> {
     throw new Error('no blocks found to plant');
   }
 
-  // signale.info('found block to plant');
+  signale.info('found block to plant');
 
   if (blockToPlant.position.distanceTo(bot!.entity.position) > 2) {
     const { success } = await moveTo(
@@ -117,10 +117,19 @@ export async function plant({ bot, mcData }: BotMachineContext): Promise<void> {
 
   const hasSeeds = await trySelectAnyItem(bot!, getSeedsIds(mcData!));
 
+  if (!hasSeeds) {
+    signale.warn('does not have any seeds to plant');
+    throw new Error('does not have any seeds to plant');
+  }
+
   if (hasSeeds) {
-    await bot
-      ?.placeBlock(blockToPlant, new Vec3(0, 1, 0))
-      .catch(() => signale.warn('could not plant farmland'));
+    try {
+      signale.info('planting seeds on farmland');
+      await bot?.placeBlock(blockToPlant, new Vec3(0, 1, 0));
+    } catch (err) {
+      signale.warn(`could not plant farmland: ${err.message}`);
+      throw err;
+    }
   }
 
   return undefined;
